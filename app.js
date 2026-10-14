@@ -212,7 +212,7 @@ function render() {
     const r = state.result;
     panel.innerHTML = `<div class="done-box"><div class="tick"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
       <h3 style="margin:0">You're booked in, ${esc(state.givenName)}</h3>
-      <p class="muted" style="max-width:32em">${esc(r.service)} on ${esc(r.when)}. You've paid ${money(r.amount, r.currency)}, and a confirmation is on its way to ${esc(r.email)}.</p>
+      <p class="muted" style="max-width:32em">${esc(r.service)} on ${esc(r.when)}. You've paid ${money(r.amount, r.currency)}. Square will send a reminder to ${esc(r.email)} before your appointment.</p>
       ${r.receiptUrl ? `<a class="btn ghost" href="${esc(r.receiptUrl)}" target="_blank" rel="noopener">View receipt</a>` : ""}
       <p class="muted" style="font-size:.9rem">Need to change it? Call ${PHONE}.</p></div>`;
   }
