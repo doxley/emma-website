@@ -4,8 +4,8 @@
 // Descriptions shown on the site. Price and duration always come from Square.
 const COPY = {
   online: {
-    blurb: "A full tarot reading from the comfort of home, on a video or phone call at a time that suits you.",
-    points: ["Tuesdays, 12pm to 8pm", "Same depth as an in-person reading", "Ideal if you can't get to Hillsborough"],
+    blurb: "A full tarot reading from the comfort of home, by video call on Facebook Messenger.",
+    points: ["Tuesdays, 12pm to 8pm", "Same depth as an in-person reading", "You'll need Messenger on your phone or computer"],
     glyph: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/><rect x="10" y="6.5" width="4" height="7" rx=".8"/></svg>',
   },
   reiki: {
@@ -193,7 +193,7 @@ function render() {
       <dl class="summary" style="margin:0">
         <div><dt>Treatment</dt><dd>${esc(s.name)} · ${s.minutes} min</dd></div>
         <div><dt>When</dt><dd>${p.dow} ${p.d} ${p.mon}, ${state.slot.label}</dd></div>
-        <div><dt>Where</dt><dd>${isOnline(s) ? "Online. Emma will be in touch with call details" : "341 Middlewood Road, S6 1TH"}</dd></div>
+        <div><dt>Where</dt><dd>${isOnline(s) ? "Video call on Facebook Messenger. Emma will message you before your reading" : "341 Middlewood Road, S6 1TH"}</dd></div>
         <div><dt>Name</dt><dd>${esc(state.givenName)} ${esc(state.familyName)}</dd></div>
         <div class="total"><dt>To pay</dt><dd>${money(s.amount, s.currency)}</dd></div>
       </dl>
