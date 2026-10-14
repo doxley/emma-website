@@ -1,0 +1,9 @@
+{
+  "name": "holistic-solutions-with-emma",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test": "node test/book.test.js"
+  }
+}
