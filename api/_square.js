@@ -113,6 +113,8 @@ export async function getBusiness() {
       for (const v of item.variations || []) {
         const vd = v.item_variation_data || {};
         if (vd.available_for_booking === false || !vd.price_money) continue;
+        // Skip Square's sample service, voucher items and anything without a real duration.
+        if (!vd.service_duration || /example|voucher/i.test(item.name)) continue;
         services.push({
           variationId: v.id,
           version: v.version,
