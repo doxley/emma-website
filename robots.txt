@@ -3,4 +3,4 @@ Allow: /
 Disallow: /api/
 Disallow: /manage
 
-Sitemap: https://holisticsolutionswithemma.co.uk/sitemap.xml
+Sitemap: https://www.holisticsolutionswithemma.co.uk/sitemap.xml
