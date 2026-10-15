@@ -9,6 +9,8 @@ const day = new Date(Date.now() + 2 * 86400e3);
 while (day.getUTCDay() !== 4) day.setUTCDate(day.getUTCDate() + 1);
 day.setUTCHours(12, 0, 0, 0);
 const SLOT = day.toISOString().replace(".000", "");
+const { promoActive } = await import("../api/_rules.js");
+const EXPECTED_AMOUNT = promoActive() ? 2500 : 4000; // the test service is an in-person £40 treatment
 
 function fakeSquare({ bookingFails = false, cardDeclined = false, slotFree = true } = {}) {
   const calls = [];
@@ -26,7 +28,7 @@ function fakeSquare({ bookingFails = false, cardDeclined = false, slotFree = tru
       case "/v2/customers": return ok({ customer: { id: "C1" } });
       case "/v2/payments":
         if (cardDeclined) return bad(402, "CARD_DECLINED");
-        assert.equal(body.amount_money.amount, 4000, "price comes from catalog");
+        assert.equal(body.amount_money.amount, EXPECTED_AMOUNT, "price comes from catalog (launch offer applied when active)");
         assert.equal(body.autocomplete, false, "card is only authorised first");
         return ok({ payment: { id: "P1", status: "APPROVED" } });
       case "/v2/bookings":

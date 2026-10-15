@@ -40,3 +40,15 @@ const w = searchWindow(course, now);
 assert.equal(w.start.toISOString().slice(0, 10), "2026-11-03");
 assert.equal(w.end.toISOString().slice(0, 10), "2026-12-22");
 console.log("✓ course dates offered right through to 22 December");
+
+// Launch offer: in-person £25 for bookings made up to and including 30 Oct 2026 (UK time)
+const { priceFor } = await import("../api/_rules.js");
+const reikiP = { name: "Reiki", amount: 4000, currency: "GBP" };
+const onlineP = { name: "Online tarot reading", amount: 3000, currency: "GBP" };
+const courseP = { name: "Tarot training: Next level", amount: 11000, currency: "GBP" };
+assert.equal(priceFor(reikiP, new Date("2026-10-15T12:00:00Z")).amount, 2500);
+assert.equal(priceFor(reikiP, new Date("2026-10-30T22:59:00Z")).amount, 2500, "last minute of 30 Oct UK time (GMT)");
+assert.equal(priceFor(reikiP, new Date("2026-10-31T00:00:00Z")).amount, 4000, "back to £40 from 31 Oct");
+assert.equal(priceFor(onlineP, new Date("2026-10-15T12:00:00Z")).amount, 3000, "online tarot unchanged");
+assert.equal(priceFor(courseP, new Date("2026-10-15T12:00:00Z")).amount, 11000, "courses unchanged");
+console.log("✓ launch offer: in-person £25 until end of 30 Oct, online tarot and courses unchanged");

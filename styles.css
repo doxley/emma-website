@@ -357,3 +357,9 @@ footer.site .foot-brand img{width:30px;height:auto}
 .foot-links a,.foot-nap a{color:inherit}
 footer.site .wrap{flex-wrap:wrap}
 .foot-nap{flex-basis:100%}
+
+/* Launch offer */
+.promo{background:var(--moss-soft);color:var(--ink);font-size:.92rem;padding:.6rem 0;text-align:center;border-bottom:1px solid var(--line)}
+.promo a{color:var(--heather);font-weight:600;margin-left:.3rem}
+s.was{font-size:.6em;color:var(--muted);font-weight:400;margin-left:.25em}
+.facts s{opacity:.7;font-weight:400;margin-left:.2em}

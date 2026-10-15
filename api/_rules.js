@@ -48,3 +48,21 @@ export function searchWindow(service, now = new Date()) {
   }
   return { start, end };
 }
+
+// Website launch offer: in-person treatments £25 (usually £40) for bookings made up to and including 30 Oct 2026.
+// It switches itself off at midnight UK time at the end of 30 October. The date decides by when the
+// booking is MADE, not the appointment date.
+export const PROMO = { kind: "inPerson", amount: 2500, lastDay: "2026-10-30", label: "Website launch offer" };
+
+export function promoActive(now = new Date()) {
+  return londonDate(now) <= PROMO.lastDay;
+}
+
+// The price to charge right now. Never lower than the promo, never higher than Square's price.
+export function priceFor(service, now = new Date()) {
+  const base = service.amount;
+  if (promoActive(now) && kindOf(service.name) === PROMO.kind && base > PROMO.amount) {
+    return { amount: PROMO.amount, wasAmount: base, currency: service.currency };
+  }
+  return { amount: base, wasAmount: null, currency: service.currency };
+}

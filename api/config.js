@@ -1,5 +1,6 @@
 // GET /api/config — public settings the booking page needs: Square app/location IDs and the bookable services.
 import { getBusiness, send, env } from "./_square.js";
+import { priceFor, promoActive, PROMO } from "./_rules.js";
 
 export default async function handler(req, res) {
   try {
@@ -8,9 +9,12 @@ export default async function handler(req, res) {
       env,
       appId: process.env.SQUARE_APP_ID,
       locationId,
-      services: services.map(({ variationId, name, baseName, description, minutes, amount, currency }) => ({
-        variationId, name, baseName, description, minutes, amount, currency,
-      })),
+      services: services.map((s) => {
+        const { variationId, name, baseName, description, minutes, currency } = s;
+        const { amount, wasAmount } = priceFor(s);
+        return { variationId, name, baseName, description, minutes, amount, wasAmount, currency };
+      }),
+      promo: promoActive() ? { label: PROMO.label, amount: PROMO.amount, lastDay: PROMO.lastDay } : null,
     });
   } catch (err) {
     console.error(err);

@@ -11,7 +11,7 @@ import {
   getBusiness, searchAvailability, sq, send, readJson, ukPhoneToE164, londonLong, londonTime, londonDate, SquareError,
 } from "./_square.js";
 import { signBooking } from "./_manage.js";
-import { allowedStart } from "./_rules.js";
+import { allowedStart, priceFor } from "./_rules.js";
 
 const clean = (s, max = 200) => String(s ?? "").trim().slice(0, max);
 
@@ -38,6 +38,7 @@ export default async function handler(req, res) {
   try {
     const { locationId, services } = await getBusiness();
     const service = services.find((s) => s.variationId === body.variationId);
+    const price = service ? priceFor(service) : null;
     if (!service) return send(res, 400, { error: "That treatment isn't available to book online." });
 
     // 1. Slot still free?
@@ -83,7 +84,7 @@ export default async function handler(req, res) {
       body: {
         idempotency_key: `${key}-pay`,
         source_id: sourceId,
-        amount_money: { amount: service.amount, currency: service.currency },
+        amount_money: { amount: price.amount, currency: price.currency },
         autocomplete: false,
         location_id: locationId,
         customer_id: customerId,
@@ -143,7 +144,7 @@ export default async function handler(req, res) {
       manageToken: signBooking(booking.id),
       service: service.name,
       when,
-      amount: service.amount,
+      amount: price.amount,
       currency: service.currency,
       email,
       receiptUrl,

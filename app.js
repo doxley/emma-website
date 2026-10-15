@@ -39,6 +39,7 @@ const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct
 const PHONE = "0114 470 4565";
 
 const money = (amount, cur = "GBP") => new Intl.NumberFormat("en-GB", { style: "currency", currency: cur, minimumFractionDigits: amount % 100 ? 2 : 0 }).format(amount / 100);
+const priceHtml = (s) => money(s.amount, s.currency) + (s.wasAmount ? ` <s class="was">${money(s.wasAmount, s.currency)}</s>` : "");
 const copyFor = (name) => COPY[Object.keys(COPY).find((k) => name.toLowerCase().includes(k.slice(0, 6)))] || { blurb: "", points: [], glyph: COPY.reiki.glyph };
 const isOnline = (s) => /online/i.test(s.name);
 const isTraining = (s) => /training|workshop|course/i.test(s.name);
@@ -103,7 +104,7 @@ function renderServices() {
       <ul>${c.points.map((p) => `<li>${p}</li>`).join("")}</ul>
       ${pageFor(s.name) ? `<a class="more" href="${pageFor(s.name)}">More about ${esc(/tarot/i.test(s.name) ? "tarot readings" : s.name.toLowerCase())} →</a>` : ""}
       <div class="meta">
-        <div><div class="price">${money(s.amount, s.currency)}</div><div class="dur">${s.minutes} minutes</div></div>
+        <div><div class="price">${priceHtml(s)}</div><div class="dur">${s.minutes} minutes</div></div>
         <button class="btn" data-book="${i}">Book</button>
       </div></article>`;
   }).join("");
@@ -149,7 +150,7 @@ function render() {
       return;
     }
     panel.innerHTML = `<h3>${MODE === "training" ? "Choose your course" : "Choose a treatment"}</h3><div class="choices">${state.services.map((x, i) => `
-      <button class="choice" aria-pressed="${s === x}" data-i="${i}"><span><b>${esc(x.name)}</b><br><span class="muted">${isTraining(x) ? "One to one · 3-hour slot · Tuesdays" : `${x.minutes} minutes · ${isOnline(x) ? "online, Tuesdays" : "at Middlewood Road"}`}</span></span><span class="price" style="font-size:1.3rem">${money(x.amount, x.currency)}</span></button>`).join("")}</div>
+      <button class="choice" aria-pressed="${s === x}" data-i="${i}"><span><b>${esc(x.name)}</b><br><span class="muted">${isTraining(x) ? "One to one · 3-hour slot · Tuesdays" : `${x.minutes} minutes · ${isOnline(x) ? "online, Tuesdays" : "at Middlewood Road"}`}</span></span><span class="price" style="font-size:1.3rem">${priceHtml(x)}</span></button>`).join("")}</div>
       <div class="panel-foot"><span class="muted">${MODE === "training" ? `Questions first? Call ${PHONE}.` : `Booking for today? Call ${PHONE}.`}</span></div>`;
     panel.querySelectorAll("[data-i]").forEach((b) => b.onclick = () => pickService(state.services[+b.dataset.i]));
   }
@@ -333,11 +334,25 @@ async function loadNextSlots() {
   } catch { box.innerHTML = `<p class="muted">Call ${PHONE} to book.</p>`; }
 }
 
+/* ---------- Launch offer banner (switches itself off after the last day) ---------- */
+function showPromo(p) {
+  if (!p || document.getElementById("promo") || MODE === "training") return;
+  const [y, m, d] = p.lastDay.split("-").map(Number);
+  const day = new Date(Date.UTC(y, m - 1, d, 12)).toLocaleDateString("en-GB", { day: "numeric", month: "long", timeZone: "UTC" });
+  const bar = document.createElement("div");
+  bar.id = "promo"; bar.className = "promo";
+  bar.innerHTML = `<div class="wrap"><b>${esc(p.label)}:</b> all in-person treatments <b>${money(p.amount)}</b> (usually £40) when you book by ${day}. <a href="#book">Book now</a></div>`;
+  document.querySelector("header.nav")?.before(bar);
+  // Treatment pages list "£40" in the hero; show the offer price there too.
+  document.querySelectorAll(".facts span").forEach((el) => { if (el.textContent.trim() === "£40") el.innerHTML = `${money(p.amount)} <s>£40</s>`; });
+}
+
 /* ---------- Boot ---------- */
 renderServices();
 render();
 api("/api/config").then((cfg) => {
   state.config = cfg;
+  showPromo(cfg.promo);
   if (cfg.services?.length) state.services = forPage(cfg.services);
   renderServices(); render(); loadNextSlots();
   // On a single-treatment page, go straight to the dates.
