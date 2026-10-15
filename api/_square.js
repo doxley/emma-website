@@ -19,6 +19,10 @@ export const OAUTH_SCOPES = [
   "APPOINTMENTS_READ",
   "APPOINTMENTS_WRITE",
   "APPOINTMENTS_BUSINESS_SETTINGS_READ",
+  // Online shop: create orders and read stock levels
+  "ORDERS_READ",
+  "ORDERS_WRITE",
+  "INVENTORY_READ",
 ];
 
 let cachedToken = null; // { token, expiresAt }

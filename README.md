@@ -18,6 +18,7 @@ The website for holisticsolutionswithemma.co.uk, with online booking and payment
 | `api/connect.js`, `api/callback.js` | One-time link that connects Emma's Square account |
 | `manage.html`, `manage.js` | "Manage booking" page: cancel or move an appointment |
 | `api/manage.js`, `api/find-booking.js`, `api/_manage.js` | Cancel / move / look up bookings, refund rules |
+| `shop.html`, `shop.js`, `api/shop.js`, `api/order.js`, `api/_shop.js` | Crystals & Gifts shop: products from Square, basket, postage, checkout |
 | `api/square-webhook.js` | Applies the refund rules when a booking is cancelled in Square itself |
 | `test/*.test.js` | Checks nobody is charged without a booking and the refund rules (`npm test`) |
 
@@ -66,3 +67,25 @@ Square's free Appointments plan lets a website book appointments on a client's b
 Clients reach "Manage booking" from the link on their confirmation screen, or at `/manage` by entering the email **and** mobile number they booked with.
 
 Webhook setup (once): Developer Console → Emma website → Production → Webhooks → Subscriptions → Add subscription. URL `https://holisticsolutionswithemma.vercel.app/api/square-webhook`, event `booking.updated`. Copy its Signature key into Vercel as `SQUARE_WEBHOOK_SIGNATURE_KEY` and redeploy.
+
+## Crystals & Gifts shop (/shop)
+Everything is managed in Square → Items → Item library. Nothing on the website needs editing.
+
+- **Show a product:** add it to the category **Online shop**. Give it a photo, description and price as normal.
+- **Postage size:** also add ONE of these categories: **Letterbox**, **Small parcel**, **Large parcel**, **Heavy parcel**. No postage category = Small parcel.
+- **Options** (e.g. sizes) use Square variations, each with its own price.
+- **Stock:** turn on stock tracking for the item in Square. The site shows "Only 2 left" / "Sold out" and won't sell more than you have. Stock goes down automatically when an order is paid.
+- **Hide a product:** remove it from Online shop (or archive it).
+
+Postage (Evri, never free; one charge per order, based on the biggest item):
+
+| Size | Charge | Evri price (2026) + packaging + Square 1.4% |
+|---|---|---|
+| Letterbox | £3.25 | £2.70 + ~35p → £3.09 |
+| Small parcel (up to 1kg) | £3.95 | £3.29 + ~60p → £3.95 |
+| Large parcel (up to 2kg) | £5.75 | £4.79 + ~75p → £5.62 |
+| Heavy parcel (up to 5kg) | £7.95 | £6.59 + ~90p → £7.60 |
+
+Change the rates in `api/_shop.js` (`POSTAGE`) and the postage note in `shop.html`. Evri's standard cover is £20 per parcel.
+
+Orders appear in Square → Orders, marked **Shipment** (with the address) or **Pickup**, and the payment in Transactions.
