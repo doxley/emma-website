@@ -225,3 +225,4 @@ blockquote p{font-style:italic}
 footer.site .foot-brand{display:inline-flex;align-items:center;gap:.6rem}
 footer.site .foot-brand img{width:30px;height:auto}
 .hero.brand-band .next .eyebrow{color:var(--heather);opacity:1}
+.links a.btn,.links a.btn:hover{color:var(--on-heather)}
