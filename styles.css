@@ -1,28 +1,30 @@
-/* Layout: heather-and-moss palette from the Sheffield moors; hero + live "next free slot" card, services, inline 4-step booking, reviews, visit */
+/* Layout: Emma's brand: violet radial glow (from the logo), cream line-art mark, Playfair italic name, Montserrat tracked labels.
+   Hero and gift bands use the logo's violet gradient; everything else sits on a soft lilac-cream page. */
 :root{
-  --bg:#f5f2f6; --surface:#ffffff; --sunk:#ece6ee;
-  --ink:#2a1f2d; --muted:#6c5f70; --line:#ddd3e0;
-  --heather:#5b3561; --heather-soft:#efe5f1; --moss:#55684a; --moss-soft:#e5ebdf;
-  --gilt:#a87b2c; --on-heather:#fbf7fc; --taken:#c9bfcc;
-  --display:"Gloock", "Georgia", serif;
-  --body:"Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --bg:#fbf7fc; --surface:#ffffff; --sunk:#f3eaf7;
+  --ink:#2a1433; --muted:#6c5877; --line:#e6d8ec;
+  --heather:#7a10b0; --heather-soft:#f3e4fa; --moss:#4f6b45; --moss-soft:#e6efe1;
+  --gilt:#b2832b; --on-heather:#fdf9ff; --taken:#cbbcd2;
+  --cream:#faf6f0; --brand-hi:#a414d9; --brand-mid:#8a0cc4; --brand-lo:#5c0789; --brand-deep:#46056a;
+  --display:"Playfair Display", "Georgia", serif;
+  --body:"Montserrat", system-ui, -apple-system, "Segoe UI", sans-serif;
   --r:14px;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#1a141c; --surface:#241c27; --sunk:#2d2430; --ink:#f1eaf3; --muted:#b7a9bb; --line:#3d3241;
-  --heather:#c9a2d1; --heather-soft:#3a2a3e; --moss:#a9bd99; --moss-soft:#2c3328;
-  --gilt:#d8b26a; --on-heather:#1d1420; --taken:#4a3f4d; color-scheme:dark }}
+  --bg:#150a1b; --surface:#211328; --sunk:#2a1832; --ink:#f4ebf8; --muted:#bba7c6; --line:#3b2645;
+  --heather:#d7a6f2; --heather-soft:#381f45; --moss:#a9c49b; --moss-soft:#25331f;
+  --gilt:#e0b866; --on-heather:#1b0b24; --taken:#4d3a57; color-scheme:dark }}
 :root[data-theme="dark"]{
-  --bg:#1a141c; --surface:#241c27; --sunk:#2d2430; --ink:#f1eaf3; --muted:#b7a9bb; --line:#3d3241;
-  --heather:#c9a2d1; --heather-soft:#3a2a3e; --moss:#a9bd99; --moss-soft:#2c3328;
-  --gilt:#d8b26a; --on-heather:#1d1420; --taken:#4a3f4d; color-scheme:dark }
+  --bg:#150a1b; --surface:#211328; --sunk:#2a1832; --ink:#f4ebf8; --muted:#bba7c6; --line:#3b2645;
+  --heather:#d7a6f2; --heather-soft:#381f45; --moss:#a9c49b; --moss-soft:#25331f;
+  --gilt:#e0b866; --on-heather:#1b0b24; --taken:#4d3a57; color-scheme:dark }
 
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6}
 .wrap{max-width:1120px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
-h1,h2,h3{font-family:var(--display);font-weight:400;line-height:1.12;text-wrap:balance;margin:0}
+h1,h2,h3{font-family:var(--display);font-style:italic;font-weight:500;line-height:1.12;text-wrap:balance;margin:0}
 h2{font-size:clamp(1.9rem,4vw,2.6rem)}
 h3{font-size:1.45rem}
 p{margin:0}
@@ -37,7 +39,7 @@ a{color:var(--heather)}
 section{padding-block:clamp(56px,8vw,96px)}
 
 /* top strip */
-.strip{background:var(--heather);color:var(--on-heather);font-size:.85rem}
+.strip{background:var(--brand-deep);color:var(--cream);font-size:.82rem;letter-spacing:.02em}
 .strip .wrap{display:flex;flex-wrap:wrap;gap:.4rem 1.6rem;justify-content:space-between;padding-block:.5rem}
 .strip span{display:inline-flex;align-items:center;gap:.45em}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--gilt);display:inline-block}
@@ -47,7 +49,7 @@ section{padding-block:clamp(56px,8vw,96px)}
 header.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
 header.nav .wrap{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding-block:.8rem}
 .brand{display:flex;align-items:center;gap:.65rem;text-decoration:none;color:var(--ink)}
-.brand b{font-family:var(--display);font-weight:400;font-size:1.25rem;line-height:1}
+.brand b{font-family:var(--display);font-style:italic;font-weight:500;font-size:1.3rem;line-height:1}
 .brand small{display:block;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .links{display:flex;gap:1.4rem;align-items:center}
 .links a{color:var(--ink);text-decoration:none;font-weight:500;font-size:.95rem}
@@ -195,3 +197,31 @@ footer.site a{color:inherit}
 .actions{display:flex;gap:.7rem;flex-wrap:wrap}
 .confirm-box{border:1.5px solid var(--heather);border-radius:14px;padding:1rem 1.1rem;display:grid;gap:.8rem}
 .found{display:grid;gap:.6rem}
+
+/* ---------- Brand ---------- */
+.eyebrow{letter-spacing:.2em;font-weight:500}
+.brand img{width:46px;height:auto;display:block}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .brand img{content:url(/brand/mark-light.png)}}
+:root[data-theme="dark"] .brand img{content:url(/brand/mark-light.png)}
+.brand small{letter-spacing:.18em}
+.price,.day b{font-family:var(--display);font-style:italic}
+blockquote p{font-style:italic}
+
+.brand-band{background:radial-gradient(ellipse 80% 90% at 50% 38%, var(--brand-hi) 0%, var(--brand-mid) 38%, var(--brand-lo) 78%, var(--brand-deep) 100%);color:var(--cream)}
+.hero.brand-band{padding-block:clamp(44px,7vw,92px) clamp(44px,6vw,80px)}
+.hero.brand-band .eyebrow{color:var(--cream);opacity:.85}
+.hero.brand-band h1{color:var(--cream)}
+.hero.brand-band h1 em{color:#f3d6ff;font-style:italic}
+.hero.brand-band .lede{color:var(--cream);opacity:.88}
+.hero.brand-band .rating{color:var(--cream)}
+.hero.brand-band .stars{color:#ffd88a}
+.hero.brand-band .btn{background:var(--cream);border-color:var(--cream);color:var(--brand-lo)}
+.hero.brand-band .btn.ghost{background:transparent;color:var(--cream);border-color:rgba(250,246,240,.7)}
+.hero .mark{width:clamp(84px,10vw,120px);height:auto;margin-bottom:1rem;display:block}
+.hero.brand-band .next{color:var(--ink);box-shadow:0 24px 60px -24px rgba(30,0,50,.55);border-color:transparent}
+.gift{background:radial-gradient(ellipse 90% 120% at 30% 30%, var(--brand-hi), var(--brand-mid) 45%, var(--brand-lo) 100%);color:var(--cream)}
+.gift .eyebrow{color:var(--cream)}
+.voucher{color:var(--cream);border-color:rgba(250,246,240,.55)}
+footer.site .foot-brand{display:inline-flex;align-items:center;gap:.6rem}
+footer.site .foot-brand img{width:30px;height:auto}
+.hero.brand-band .next .eyebrow{color:var(--heather);opacity:1}
