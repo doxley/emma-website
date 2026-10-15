@@ -280,3 +280,16 @@ footer.site .foot-brand img{width:30px;height:auto}
 .room-days{display:flex;flex-wrap:wrap;gap:.45rem}
 .dchip{display:inline-grid;place-items:center;min-width:52px;padding:.5rem .6rem;border-radius:10px;border:1.5px dashed var(--line);color:var(--taken);font-weight:600;font-size:.88rem}
 .dchip.on{border:1.5px solid var(--heather);background:var(--heather-soft);color:var(--heather)}
+
+/* Photos */
+.photo{margin:0;border-radius:var(--r);overflow:hidden;background:var(--heather-soft);max-width:100%}
+.photo img{display:block;width:100%;height:100%;object-fit:cover}
+.svc-intro{display:grid;grid-template-columns:minmax(220px,340px) 1fr;gap:clamp(20px,4vw,56px);align-items:center;margin-bottom:2.4rem}
+.svc-intro .svc-head{display:grid;gap:1rem;margin-bottom:0;justify-items:start}
+.svc-intro .svc-head p{max-width:34em}
+.photo.portrait{aspect-ratio:3/4;box-shadow:0 24px 50px -28px rgba(60,0,90,.55)}
+@media (max-width:760px){.svc-intro{grid-template-columns:1fr}.photo.portrait{aspect-ratio:4/3;max-height:420px}.photo.portrait img{object-position:50% 30%}}
+.room{grid-template-columns:minmax(220px,1fr) 1.2fr 1fr}
+.room-photo{aspect-ratio:16/10;align-self:stretch}
+@media (max-width:1000px){.room{grid-template-columns:1fr 1fr}.room-photo{grid-column:1/-1}}
+@media (max-width:760px){.room{grid-template-columns:1fr}}
