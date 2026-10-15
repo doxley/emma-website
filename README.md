@@ -46,4 +46,5 @@ Square's free Appointments plan lets a website book appointments on a client's b
 - Services: Reiki, Reflexology, Tarot reading — 60 min, £40; Online tarot reading — 60 min, £30. All "bookable online", Emma assigned.
 - Availability: Tue 12–8 (online tarot only), Wed 12–6, Thu & Fri 12–8.
 - The website enforces which days each service can be booked: any service with "online" in its name is Tuesdays only, everything else Wednesday–Friday (see `api/availability.js`).
-- Turn on customer confirmations and reminders.
+- Online booking: ON, auto-accept, 60-minute intervals, 12 hours minimum notice, customers locked to UK time (Appointments → Online booking → Settings).
+- Reminders are included on the Free plan; instant confirmation texts/emails need Appointments Plus.
