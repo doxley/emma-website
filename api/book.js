@@ -10,6 +10,7 @@
 import {
   getBusiness, searchAvailability, sq, send, readJson, ukPhoneToE164, londonLong, londonTime, londonDate, SquareError,
 } from "./_square.js";
+import { signBooking } from "./_manage.js";
 
 const clean = (s, max = 200) => String(s ?? "").trim().slice(0, max);
 
@@ -140,6 +141,7 @@ export default async function handler(req, res) {
 
     return send(res, 200, {
       bookingId: booking.id,
+      manageToken: signBooking(booking.id),
       service: service.name,
       when,
       amount: service.amount,

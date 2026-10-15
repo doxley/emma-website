@@ -2,8 +2,10 @@
   "name": "holistic-solutions-with-emma",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
-    "test": "node test/book.test.js"
+    "test": "node test/book.test.js && node test/manage.test.js"
   }
 }

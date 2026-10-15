@@ -16,7 +16,10 @@ The website for holisticsolutionswithemma.co.uk, with online booking and payment
 | `api/availability.js` | Free times for the next 3 weeks (same-day is phone only) |
 | `api/book.js` | Takes payment and creates the booking |
 | `api/connect.js`, `api/callback.js` | One-time link that connects Emma's Square account |
-| `test/book.test.js` | Checks nobody is charged without a booking (`npm test`) |
+| `manage.html`, `manage.js` | "Manage booking" page: cancel or move an appointment |
+| `api/manage.js`, `api/find-booking.js`, `api/_manage.js` | Cancel / move / look up bookings, refund rules |
+| `api/square-webhook.js` | Applies the refund rules when a booking is cancelled in Square itself |
+| `test/*.test.js` | Checks nobody is charged without a booking and the refund rules (`npm test`) |
 
 ## Settings (Vercel → Project → Settings → Environment Variables)
 
@@ -28,6 +31,7 @@ The website for holisticsolutionswithemma.co.uk, with online booking and payment
 | `SQUARE_REFRESH_TOKEN` | Produced by the one-time connect link below |
 | `SETUP_KEY` | Any long random phrase; protects the connect link |
 | `SQUARE_LOCATION_ID` | Optional; defaults to the first active location |
+| `SQUARE_WEBHOOK_SIGNATURE_KEY` | From Developer Console → Webhooks → the subscription → Signature key |
 | `SQUARE_ACCESS_TOKEN` | Optional, sandbox testing only: use instead of the refresh token |
 
 Never put these values in the code or share them in chat or email.
@@ -48,3 +52,17 @@ Square's free Appointments plan lets a website book appointments on a client's b
 - The website enforces which days each service can be booked: any service with "online" in its name is Tuesdays only, everything else Wednesday–Friday (see `api/availability.js`).
 - Online booking: ON, auto-accept, 60-minute intervals, 12 hours minimum notice, customers locked to UK time (Appointments → Online booking → Settings).
 - Reminders are included on the Free plan; instant confirmation texts/emails need Appointments Plus.
+
+## Cancellations, changes and refunds
+| Situation | What happens |
+|---|---|
+| Client cancels more than 24 hours before (website or Square reminder link) | Booking cancelled, **full refund** automatically |
+| Client cancels within 24 hours | Booking cancelled, **no refund** (Emma can still refund by hand in Square) |
+| Client doesn't turn up (Emma marks it "No show" in Square) | **No refund** |
+| Client moves the appointment more than 24 hours before | Moved to the new time on the website; no money changes |
+| Client wants to move within 24 hours | Asked to call |
+| **Emma cancels** an appointment in Square | Client gets a **full refund** automatically |
+
+Clients reach "Manage booking" from the link on their confirmation screen, or at `/manage` by entering the email **and** mobile number they booked with.
+
+Webhook setup (once): Developer Console → Emma website → Production → Webhooks → Subscriptions → Add subscription. URL `https://holisticsolutionswithemma.vercel.app/api/square-webhook`, event `booking.updated`. Copy its Signature key into Vercel as `SQUARE_WEBHOOK_SIGNATURE_KEY` and redeploy.

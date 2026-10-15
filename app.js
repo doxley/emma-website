@@ -168,7 +168,7 @@ function render() {
         <label>Mobile number<input id="phone" type="tel" autocomplete="tel" value="${esc(state.phone)}" required></label>
         <label>Email<input id="email" type="email" autocomplete="email" value="${esc(state.email)}" required></label>
         <label class="full">Anything Emma should know? <span class="muted" style="font-weight:400">(optional)</span><textarea id="note" rows="3" placeholder="Health conditions, pregnancy, or what you'd like to focus on">${esc(state.note)}</textarea></label>
-        <label class="check full"><input type="checkbox" id="agree" ${state.agree ? "checked" : ""}> I understand that appointments cancelled with less than 24 hours' notice may not be refunded.</label>
+        <label class="check full"><input type="checkbox" id="agree" ${state.agree ? "checked" : ""}> I agree to the cancellation policy: cancel or move online up to 24 hours before for a full refund. Cancellations within 24 hours and missed appointments aren't refunded.</label>
         <p class="err full" id="err"></p>
         <div class="panel-foot full" style="margin-top:0"><button type="button" class="btn ghost" id="back">Back</button><button class="btn" type="submit">Continue to payment</button></div>
       </form>`;
@@ -213,8 +213,11 @@ function render() {
     panel.innerHTML = `<div class="done-box"><div class="tick"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
       <h3 style="margin:0">You're booked in, ${esc(state.givenName)}</h3>
       <p class="muted" style="max-width:32em">${esc(r.service)} on ${esc(r.when)}. You've paid ${money(r.amount, r.currency)}. Square will send a reminder to ${esc(r.email)} before your appointment.</p>
-      ${r.receiptUrl ? `<a class="btn ghost" href="${esc(r.receiptUrl)}" target="_blank" rel="noopener">View receipt</a>` : ""}
-      <p class="muted" style="font-size:.9rem">Need to change it? Call ${PHONE}.</p></div>`;
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center">
+        ${r.manageToken ? `<a class="btn" href="/manage?t=${encodeURIComponent(r.manageToken)}">Manage this booking</a>` : ""}
+        ${r.receiptUrl ? `<a class="btn ghost" href="${esc(r.receiptUrl)}" target="_blank" rel="noopener">View receipt</a>` : ""}
+      </div>
+      <p class="muted" style="font-size:.9rem;max-width:32em">Bookmark “Manage this booking” to cancel or move your appointment later. You can also find it any time under <a href="/manage">Manage booking</a> with your email and mobile number.</p></div>`;
   }
 }
 
