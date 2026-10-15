@@ -293,3 +293,4 @@ footer.site .foot-brand img{width:30px;height:auto}
 .room-photo{aspect-ratio:16/10;align-self:stretch}
 @media (max-width:1000px){.room{grid-template-columns:1fr 1fr}.room-photo{grid-column:1/-1}}
 @media (max-width:760px){.room{grid-template-columns:1fr}}
+#treatments{padding-top:clamp(40px,6vw,80px)!important}
