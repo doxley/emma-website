@@ -325,3 +325,8 @@ footer.site .foot-brand img{width:30px;height:auto}
 .ws-prices b{color:var(--ink);font-weight:600;margin-right:.3rem}
 .time{white-space:nowrap}
 .times{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}
+
+/* Legal pages */
+.legal h2{font-size:1.4rem;margin:1.8rem 0 .6rem}
+.legal p,.legal li{max-width:68ch}
+.legal ul{padding-left:1.1em;display:grid;gap:.4rem}

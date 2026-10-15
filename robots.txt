@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /manage
+
+Sitemap: https://holisticsolutionswithemma.co.uk/sitemap.xml
