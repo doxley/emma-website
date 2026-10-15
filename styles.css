@@ -323,3 +323,5 @@ footer.site .foot-brand img{width:30px;height:auto}
 .ws-prices{display:flex;flex-wrap:wrap;gap:.6rem}
 .ws-prices span{padding:.5rem .9rem;border-radius:999px;background:var(--heather-soft);color:var(--heather)}
 .ws-prices b{color:var(--ink);font-weight:600;margin-right:.3rem}
+.time{white-space:nowrap}
+.times{grid-template-columns:repeat(auto-fill,minmax(110px,1fr))}
