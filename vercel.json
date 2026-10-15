@@ -21,12 +21,12 @@
   ],
   "redirects": [
     {
-      "source": "/make-a-booking/:path*",
+      "source": "/make-a-booking(/.*)?",
       "destination": "/#book",
       "permanent": true
     },
     {
-      "source": "/my-account/:path*",
+      "source": "/my-account(/.*)?",
       "destination": "/#book",
       "permanent": true
     },
@@ -43,32 +43,32 @@
       "permanent": true
     },
     {
-      "source": "/privacy-policy/:path*",
+      "source": "/privacy-policy(/.*)?",
       "destination": "/privacy",
       "permanent": true
     },
     {
-      "source": "/product/:path*",
+      "source": "/product(/.*)?",
       "destination": "/shop",
       "permanent": true
     },
     {
-      "source": "/product-category/:path*",
+      "source": "/product-category(/.*)?",
       "destination": "/shop",
       "permanent": true
     },
     {
-      "source": "/cart/:path*",
+      "source": "/cart(/.*)?",
       "destination": "/shop",
       "permanent": true
     },
     {
-      "source": "/checkout/:path*",
+      "source": "/checkout(/.*)?",
       "destination": "/shop",
       "permanent": true
     },
     {
-      "source": "/wp-admin/:path*",
+      "source": "/wp-admin(/.*)?",
       "destination": "/",
       "permanent": false
     },
@@ -78,7 +78,7 @@
       "permanent": false
     },
     {
-      "source": "/feed/:path*",
+      "source": "/feed(/.*)?",
       "destination": "/",
       "permanent": true
     }
