@@ -156,8 +156,6 @@ blockquote footer b{color:var(--ink);font-weight:600}
 .vouchers{display:grid;gap:.7rem}
 .voucher{display:flex;justify-content:space-between;align-items:center;padding:1rem 1.2rem;border-radius:14px;border:1.5px dashed color-mix(in srgb,var(--on-heather) 50%,transparent);color:var(--on-heather);text-decoration:none;font-weight:600}
 .voucher:hover{background:color-mix(in srgb,var(--on-heather) 10%,transparent)}
-.partner{margin-top:1.4rem;display:flex;gap:1rem;align-items:center;flex-wrap:wrap;padding:1.2rem 1.4rem;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
-.partner p{flex:1 1 300px}
 
 /* visit */
 .visit{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,5vw,56px)}
@@ -273,3 +271,12 @@ footer.site .foot-brand img{width:30px;height:auto}
 .shop-empty{grid-column:1/-1;text-align:center;padding:2.5rem 1rem;background:var(--surface);border:1px dashed var(--line);border-radius:var(--r);display:grid;gap:.6rem;justify-items:center}
 .shop-teaser{display:flex;justify-content:space-between;align-items:center;gap:1.2rem;flex-wrap:wrap;padding:1.4rem 1.6rem;border-radius:var(--r);background:var(--surface);border:1px solid var(--line);margin-top:1.2rem}
 .shop-teaser img{width:56px;height:auto}
+
+/* Room to rent */
+.room{margin-top:1.4rem;display:grid;grid-template-columns:1.3fr 1fr;gap:clamp(16px,3vw,36px);align-items:center;padding:clamp(18px,3vw,28px);border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+@media (max-width:760px){.room{grid-template-columns:1fr}}
+.room h3{margin:.3rem 0 .6rem;font-size:1.5rem}
+.room-text,.room-days{min-width:0}
+.room-days{display:flex;flex-wrap:wrap;gap:.45rem}
+.dchip{display:inline-grid;place-items:center;min-width:52px;padding:.5rem .6rem;border-radius:10px;border:1.5px dashed var(--line);color:var(--taken);font-weight:600;font-size:.88rem}
+.dchip.on{border:1.5px solid var(--heather);background:var(--heather-soft);color:var(--heather)}
