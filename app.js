@@ -9,13 +9,13 @@ const COPY = {
     glyph: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/><rect x="10" y="6.5" width="4" height="7" rx=".8"/></svg>',
   },
   reiki: {
-    blurb: "Gentle hands-on energy healing to ease stress, help you sleep better and leave you feeling lighter.",
+    blurb: "Gentle, hands-on Reiki healing: a deeply relaxing hour to unwind, switch off and leave feeling lighter.",
     points: ["Fully clothed, lying on a heated couch", "Tailored to what you're carrying right now", "Lovely as a monthly reset"],
     glyph: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3c3 4 3 8 0 11-3-3-3-7 0-11Z"/><path d="M12 14c-4-1-7 0-8 4 4 1 7 0 8-4Zm0 0c4-1 7 0 8 4-4 1-7 0-8-4Z"/></svg>',
   },
   reflexology: {
-    blurb: "Pressure on points of the feet that relate to the rest of the body, for circulation, aches and deep relaxation.",
-    points: ["Emma explains each step as she goes", "Helpful for tension, swelling and back pain", "Hands can be treated instead of feet"],
+    blurb: "Gentle pressure on reflex points of the feet, said to relate to the rest of the body, for deep relaxation and a sense of balance.",
+    points: ["Emma explains each step as she goes", "Wonderful for winding down from everyday stress", "Hands can be treated instead of feet"],
     glyph: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M9 21c-3 0-4-3-4-6s1-7 2-9 3-3 5-2 2 4 1 7-1 4 0 6-1 4-4 4Z"/><circle cx="15" cy="4" r="1"/><circle cx="17.5" cy="6" r=".9"/><circle cx="19" cy="8.6" r=".8"/></svg>',
   },
   tarot: {
@@ -43,8 +43,17 @@ const copyFor = (name) => COPY[Object.keys(COPY).find((k) => name.toLowerCase().
 const isOnline = (s) => /online/i.test(s.name);
 const isTraining = (s) => /training|workshop|course/i.test(s.name);
 // This script runs on the home page (treatments) and on /workshops (tarot training).
-const MODE = document.body.dataset.booking === "training" ? "training" : "treatments";
-const forPage = (list) => list.filter((s) => (MODE === "training" ? isTraining(s) : !isTraining(s)));
+// It also runs on each treatment page (/reiki-sheffield etc.), showing just that treatment.
+const PAGE = document.body.dataset.booking || "treatments";
+const MODE = PAGE === "training" ? "training" : "treatments";
+const MATCH = {
+  training: isTraining,
+  treatments: (s) => !isTraining(s),
+  reiki: (s) => /reiki/i.test(s.name),
+  reflexology: (s) => /reflex/i.test(s.name),
+  tarot: (s) => /tarot/i.test(s.name) && !isTraining(s),
+};
+const forPage = (list) => list.filter(MATCH[PAGE] || MATCH.treatments);
 const $ = (id) => document.getElementById(id);
 const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const hm = (m) => { const h = Math.floor(m / 60), mm = m % 60; return (h % 12 || 12) + (mm ? ":" + String(mm).padStart(2, "0") : "") + (h >= 12 ? "pm" : "am"); };
@@ -78,10 +87,11 @@ const api = async (path, opts) => {
 })();
 
 /* ---------- State ---------- */
-const state = { step: 1, config: null, services: MODE === "training" ? [] : FALLBACK, svc: null, days: null, day: null, slot: null, loadErr: null,
+const state = { step: 1, config: null, services: MODE === "training" ? [] : forPage(FALLBACK), svc: null, days: null, day: null, slot: null, loadErr: null,
   givenName: "", familyName: "", email: "", phone: "", note: "", agree: false, result: null };
 const panel = document.getElementById("panel");
 
+const pageFor = (name) => /reiki/i.test(name) ? "/reiki-sheffield" : /reflex/i.test(name) ? "/reflexology-sheffield" : /tarot/i.test(name) && !/training/i.test(name) ? "/tarot-reading-sheffield" : "";
 function renderServices() {
   if (!$("serviceCards")) return;
   document.getElementById("serviceCards").innerHTML = state.services.map((s, i) => {
@@ -91,6 +101,7 @@ function renderServices() {
       <h3>${esc(s.name)}</h3>
       <p>${esc(c.blurb || s.description)}</p>
       <ul>${c.points.map((p) => `<li>${p}</li>`).join("")}</ul>
+      ${pageFor(s.name) ? `<a class="more" href="${pageFor(s.name)}">More about ${esc(/tarot/i.test(s.name) ? "tarot readings" : s.name.toLowerCase())} →</a>` : ""}
       <div class="meta">
         <div><div class="price">${money(s.amount, s.currency)}</div><div class="dur">${s.minutes} minutes</div></div>
         <button class="btn" data-book="${i}">Book</button>
@@ -329,6 +340,8 @@ api("/api/config").then((cfg) => {
   state.config = cfg;
   if (cfg.services?.length) state.services = forPage(cfg.services);
   renderServices(); render(); loadNextSlots();
+  // On a single-treatment page, go straight to the dates.
+  if (PAGE !== "treatments" && PAGE !== "training" && state.services.length === 1) pickService(state.services[0]);
 }).catch((e) => {
   state.loadErr = e.message; render();
   if ($("nextSlots")) $("nextSlots").innerHTML = `<p class="muted">Call ${PHONE} to book.</p>`;

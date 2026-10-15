@@ -330,3 +330,30 @@ footer.site .foot-brand img{width:30px;height:auto}
 .legal h2{font-size:1.4rem;margin:1.8rem 0 .6rem}
 .legal p,.legal li{max-width:68ch}
 .legal ul{padding-left:1.1em;display:grid;gap:.4rem}
+
+/* ---------- SEO / treatment pages ---------- */
+.hero h1 .kicker{display:block;font-family:var(--body);font-style:normal;font-size:.78rem;letter-spacing:.2em;text-transform:uppercase;font-weight:500;color:var(--cream);opacity:.85;margin-bottom:.9rem;line-height:1.5}
+.svc .more{color:var(--heather);font-weight:600;font-size:.92rem;text-decoration:none}
+.svc .more:hover{text-decoration:underline}
+.svc-links{margin-top:1.4rem}
+.svc-links a{color:var(--heather)}
+.crumbs{font-size:.82rem;margin-bottom:.8rem;opacity:.85}
+.crumbs a{color:inherit}
+.facts{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1.1rem}
+.facts span{font-size:.82rem;font-weight:600;padding:.35em .85em;border-radius:999px;background:rgba(255,255,255,.14);color:var(--cream);border:1px solid rgba(255,255,255,.25)}
+.svc-page h2{font-size:clamp(1.6rem,3.4vw,2.1rem);margin-top:1rem}
+.svc-page a,.faq a{color:var(--heather)}
+.steps-list{margin:0;padding-left:1.2em;display:grid;gap:.6rem}
+.steps-list b{color:var(--ink)}
+.small-print{font-size:.88rem;color:var(--muted);padding:.8rem 1rem;border-radius:10px;background:var(--sunk)}
+.two-ways{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin-block:.6rem}
+@media (max-width:760px){.two-ways{grid-template-columns:1fr}}
+.two-ways h2{margin-top:0;font-size:1.45rem}
+.faq{width:100%}
+.faq details{border-bottom:1px solid var(--line);padding:.9rem 0}
+.faq summary{cursor:pointer;font-weight:600;list-style-position:outside}
+.faq details p{margin:.6rem 0 0;color:var(--muted)}
+.social{display:flex;flex-wrap:wrap;gap:.6rem}
+.foot-links a,.foot-nap a{color:inherit}
+footer.site .wrap{flex-wrap:wrap}
+.foot-nap{flex-basis:100%}
