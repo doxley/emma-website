@@ -5,9 +5,7 @@
 import { getBusiness, searchAvailability, sq, send, readJson, londonDate, londonLong, londonTime } from "./_square.js";
 import { verifyToken, getBooking, describe, refundBooking, qualifiesForRefund, isCancelled, PHONE } from "./_manage.js";
 
-const ONLINE_DAYS = [2];
-const IN_PERSON_DAYS = [3, 4, 5];
-const weekday = (iso) => { const [y, m, d] = iso.split("-").map(Number); return new Date(Date.UTC(y, m - 1, d)).getUTCDay(); };
+import { allowedStart } from "./_rules.js";
 const money = (p, cur = "GBP") => new Intl.NumberFormat("en-GB", { style: "currency", currency: cur }).format(p / 100).replace(/\.00$/, "");
 
 async function load(token) {
@@ -79,8 +77,8 @@ export default async function handler(req, res) {
       if (Number.isNaN(start.getTime())) return send(res, 400, { error: "Please choose a new time." });
       const date = londonDate(start);
       if (date === londonDate(new Date())) return send(res, 409, { error: `For appointments today, please call ${PHONE}.` });
-      if (!(/online/i.test(svc.name) ? ONLINE_DAYS : IN_PERSON_DAYS).includes(weekday(date))) {
-        return send(res, 409, { error: "That treatment isn't available on that day. Please choose another time." });
+      if (!allowedStart(svc, start)) {
+        return send(res, 409, { error: "That time isn't available to book online. Please choose another." });
       }
       const { locationId } = await getBusiness();
       const slots = await searchAvailability({

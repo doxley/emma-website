@@ -18,6 +18,7 @@ The website for holisticsolutionswithemma.co.uk, with online booking and payment
 | `api/connect.js`, `api/callback.js` | One-time link that connects Emma's Square account |
 | `manage.html`, `manage.js` | "Manage booking" page: cancel or move an appointment |
 | `api/manage.js`, `api/find-booking.js`, `api/_manage.js` | Cancel / move / look up bookings, refund rules |
+| `workshops.html` | Tarot training page with online course booking (uses `app.js`) |
 | `shop.html`, `shop.js`, `api/shop.js`, `api/order.js`, `api/_shop.js` | Crystals & Gifts shop: products from Square, basket, postage, checkout |
 | `api/square-webhook.js` | Applies the refund rules when a booking is cancelled in Square itself |
 | `test/*.test.js` | Checks nobody is charged without a booking and the refund rules (`npm test`) |
@@ -49,8 +50,10 @@ Square's free Appointments plan lets a website book appointments on a client's b
 
 ## In Square Appointments (Dashboard → Appointments)
 - Services: Reiki, Reflexology, Tarot reading — 60 min, £40; Online tarot reading — 60 min, £30. All "bookable online", Emma assigned.
-- Availability: Tue 12–8 (online tarot only), Wed 12–6, Thu & Fri 12–8.
-- The website enforces which days each service can be booked: any service with "online" in its name is Tuesdays only, everything else Wednesday–Friday (see `api/availability.js`).
+- Tarot training: "Tarot training: Understanding the basics" £80 and "Tarot training: Next level" £110, both 3 hours.
+- Availability: Tue 12–8 (online tarot + tarot training), Wed 12–6, Thu & Fri 12–8.
+- The website enforces when each service can be booked (see `api/_rules.js`): names containing "training" → Tuesdays at 1pm or 5pm, 3 Nov–22 Dec 2026; "online" → Tuesdays; everything else Wednesday–Friday. All services share Emma's diary, so a booking of one blocks overlapping times for the others (e.g. online tarot vs training).
+- To run more course dates, change `from`/`to` (and `starts`) for `training` in `api/_rules.js`.
 - Online booking: ON, auto-accept, 60-minute intervals, 12 hours minimum notice, customers locked to UK time (Appointments → Online booking → Settings).
 - Reminders are included on the Free plan; instant confirmation texts/emails need Appointments Plus.
 

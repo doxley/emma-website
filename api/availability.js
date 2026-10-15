@@ -1,14 +1,10 @@
 // GET /api/availability?service=<variationId>
-// Returns free start times for the next 3 weeks, grouped by London date.
+// Free start times grouped by London date, filtered by each service's rules (see _rules.js).
 // Same-day appointments are left out: those are booked by phone.
 import { getBusiness, searchAvailability, londonDate, londonTime, send } from "./_square.js";
+import { allowedStart, searchWindow, kindOf } from "./_rules.js";
 
-const DAYS_AHEAD = 21;
-// Which weekdays each kind of service can be booked online (0 = Sunday).
-// Online tarot is Tuesdays only; in-person treatments are Wednesday to Friday.
-const ONLINE_DAYS = [2];
-const IN_PERSON_DAYS = [3, 4, 5];
-const weekday = (iso) => { const [y, m, d] = iso.split("-").map(Number); return new Date(Date.UTC(y, m - 1, d)).getUTCDay(); };
+const CHUNK_MS = 28 * 86400e3; // Square limits each availability search to about a month
 
 export default async function handler(req, res) {
   try {
@@ -16,24 +12,31 @@ export default async function handler(req, res) {
     const variationId = url.searchParams.get("service");
     const { locationId, services } = await getBusiness();
     const service = services.find((s) => s.variationId === variationId);
-    if (!service) return send(res, 404, { error: "That treatment isn't available to book online." });
+    if (!service) return send(res, 404, { error: "That isn't available to book online." });
 
     const now = new Date();
-    const today = londonDate(now);
-    const startAt = new Date(now.getTime() + 60 * 1000).toISOString();
-    const endAt = new Date(now.getTime() + DAYS_AHEAD * 86400e3).toISOString();
-
-    const slots = await searchAvailability({ service, locationId, startAt, endAt });
+    const { start, end } = searchWindow(service, now);
     const days = {};
-    const seen = new Set();
-    for (const a of slots) {
-      const date = londonDate(a.start_at);
-      if (date === today || seen.has(a.start_at)) continue;
-      if (!(/online/i.test(service.name) ? ONLINE_DAYS : IN_PERSON_DAYS).includes(weekday(date))) continue;
-      seen.add(a.start_at);
-      (days[date] ||= []).push({ startAt: a.start_at, label: londonTime(a.start_at) });
+    if (start < end) {
+      const slots = [];
+      for (let t = start.getTime(); t < end.getTime(); t += CHUNK_MS) {
+        const chunkEnd = Math.min(t + CHUNK_MS, end.getTime());
+        slots.push(...(await searchAvailability({
+          service, locationId, startAt: new Date(t).toISOString(), endAt: new Date(chunkEnd).toISOString(),
+        })));
+      }
+      const training = kindOf(service.name) === "training";
+      const seen = new Set();
+      for (const a of slots) {
+        if (seen.has(a.start_at) || !allowedStart(service, a.start_at, now)) continue;
+        seen.add(a.start_at);
+        const label = training
+          ? `${londonTime(a.start_at)}–${londonTime(Date.parse(a.start_at) + service.minutes * 60000)}`
+          : londonTime(a.start_at);
+        (days[londonDate(a.start_at)] ||= []).push({ startAt: a.start_at, label });
+      }
+      for (const d of Object.values(days)) d.sort((x, y) => x.startAt.localeCompare(y.startAt));
     }
-    for (const d of Object.values(days)) d.sort((x, y) => x.startAt.localeCompare(y.startAt));
     send(res, 200, { days });
   } catch (err) {
     console.error(err);

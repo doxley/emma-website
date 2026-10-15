@@ -6,6 +6,6 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "node test/book.test.js && node test/manage.test.js && node test/shop.test.js"
+    "test": "node test/book.test.js && node test/manage.test.js && node test/shop.test.js && node test/rules.test.js"
   }
 }

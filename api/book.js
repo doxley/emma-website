@@ -11,6 +11,7 @@ import {
   getBusiness, searchAvailability, sq, send, readJson, ukPhoneToE164, londonLong, londonTime, londonDate, SquareError,
 } from "./_square.js";
 import { signBooking } from "./_manage.js";
+import { allowedStart } from "./_rules.js";
 
 const clean = (s, max = 200) => String(s ?? "").trim().slice(0, max);
 
@@ -49,9 +50,7 @@ export default async function handler(req, res) {
     const slot = slots.find((a) => Date.parse(a.start_at) === start.getTime());
     if (!slot) return send(res, 409, { error: "Sorry, that time has just been taken. Please choose another.", code: "SLOT_TAKEN" });
     if (londonDate(start) === londonDate(new Date())) return send(res, 409, { error: "For appointments today, please call 0114 470 4565." });
-    const [yy, mm, dd] = londonDate(start).split("-").map(Number);
-    const dow = new Date(Date.UTC(yy, mm - 1, dd)).getUTCDay();
-    if (!(/online/i.test(service.name) ? [2] : [3, 4, 5]).includes(dow)) return send(res, 409, { error: "That treatment isn't available on that day. Please choose another time.", code: "SLOT_TAKEN" });
+    if (!allowedStart(service, slot.start_at)) return send(res, 409, { error: "That time isn't available to book online. Please choose another.", code: "SLOT_TAKEN" });
     const segment = slot.appointment_segments?.[0] || {};
 
     // 2. Customer

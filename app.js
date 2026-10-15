@@ -41,6 +41,11 @@ const PHONE = "0114 470 4565";
 const money = (amount, cur = "GBP") => new Intl.NumberFormat("en-GB", { style: "currency", currency: cur, minimumFractionDigits: amount % 100 ? 2 : 0 }).format(amount / 100);
 const copyFor = (name) => COPY[Object.keys(COPY).find((k) => name.toLowerCase().includes(k.slice(0, 6)))] || { blurb: "", points: [], glyph: COPY.reiki.glyph };
 const isOnline = (s) => /online/i.test(s.name);
+const isTraining = (s) => /training|workshop|course/i.test(s.name);
+// This script runs on the home page (treatments) and on /workshops (tarot training).
+const MODE = document.body.dataset.booking === "training" ? "training" : "treatments";
+const forPage = (list) => list.filter((s) => (MODE === "training" ? isTraining(s) : !isTraining(s)));
+const $ = (id) => document.getElementById(id);
 const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const hm = (m) => { const h = Math.floor(m / 60), mm = m % 60; return (h % 12 || 12) + (mm ? ":" + String(mm).padStart(2, "0") : "") + (h >= 12 ? "pm" : "am"); };
 const dayParts = (iso) => { const [y, m, d] = iso.split("-").map(Number); const dt = new Date(Date.UTC(y, m - 1, d, 12)); return { dow: DAYNAMES[dt.getUTCDay()], d, mon: MON[m - 1] }; };
@@ -54,6 +59,7 @@ const api = async (path, opts) => {
 
 /* ---------- Opening status + hours table ---------- */
 (function () {
+  if (!$("statusDot") || !$("hours")) return;
   const now = new Date(), h = HOURS[now.getDay()], mins = now.getHours() * 60 + now.getMinutes();
   const open = h && mins >= h[0] * 60 && mins < h[1] * 60;
   document.getElementById("statusDot").classList.toggle("open", !!open);
@@ -72,11 +78,12 @@ const api = async (path, opts) => {
 })();
 
 /* ---------- State ---------- */
-const state = { step: 1, config: null, services: FALLBACK, svc: null, days: null, day: null, slot: null, loadErr: null,
+const state = { step: 1, config: null, services: MODE === "training" ? [] : FALLBACK, svc: null, days: null, day: null, slot: null, loadErr: null,
   givenName: "", familyName: "", email: "", phone: "", note: "", agree: false, result: null };
 const panel = document.getElementById("panel");
 
 function renderServices() {
+  if (!$("serviceCards")) return;
   document.getElementById("serviceCards").innerHTML = state.services.map((s, i) => {
     const c = copyFor(s.name);
     return `<article class="svc">
@@ -130,9 +137,9 @@ function render() {
         : `<h3>Loading treatments…</h3>`;
       return;
     }
-    panel.innerHTML = `<h3>Choose a treatment</h3><div class="choices">${state.services.map((x, i) => `
-      <button class="choice" aria-pressed="${s === x}" data-i="${i}"><span><b>${esc(x.name)}</b><br><span class="muted">${x.minutes} minutes · ${isOnline(x) ? "online, Tuesdays" : "at Middlewood Road"}</span></span><span class="price" style="font-size:1.3rem">${money(x.amount, x.currency)}</span></button>`).join("")}</div>
-      <div class="panel-foot"><span class="muted">Booking for today? Call ${PHONE}.</span></div>`;
+    panel.innerHTML = `<h3>${MODE === "training" ? "Choose your course" : "Choose a treatment"}</h3><div class="choices">${state.services.map((x, i) => `
+      <button class="choice" aria-pressed="${s === x}" data-i="${i}"><span><b>${esc(x.name)}</b><br><span class="muted">${isTraining(x) ? "One to one · 3-hour slot · Tuesdays" : `${x.minutes} minutes · ${isOnline(x) ? "online, Tuesdays" : "at Middlewood Road"}`}</span></span><span class="price" style="font-size:1.3rem">${money(x.amount, x.currency)}</span></button>`).join("")}</div>
+      <div class="panel-foot"><span class="muted">${MODE === "training" ? `Questions first? Call ${PHONE}.` : `Booking for today? Call ${PHONE}.`}</span></div>`;
     panel.querySelectorAll("[data-i]").forEach((b) => b.onclick = () => pickService(state.services[+b.dataset.i]));
   }
 
@@ -146,11 +153,11 @@ function render() {
     }
     const dates = Object.keys(state.days);
     if (!dates.length) {
-      panel.innerHTML = `<h3>${esc(s.name)}</h3><p>There are no free online slots in the next three weeks. Please call <b>${PHONE}</b> and Emma will do her best to fit you in.</p><div class="panel-foot"><button class="btn ghost" id="back">Back</button></div>`;
+      panel.innerHTML = `<h3>${esc(s.name)}</h3><p>${isTraining(s) ? "All course dates are booked." : "There are no free online slots in the next three weeks."} Please call <b>${PHONE}</b> and Emma will do her best to fit you in.</p><div class="panel-foot"><button class="btn ghost" id="back">Back</button></div>`;
       panel.querySelector("#back").onclick = () => go(1);
       return;
     }
-    panel.innerHTML = `<h3>${esc(s.name)}: pick a date and time</h3>
+    panel.innerHTML = `<h3>${esc(s.name)}: pick ${isTraining(s) ? "a Tuesday" : "a date and time"}</h3>
       <div class="days" role="group" aria-label="Date">${dates.map((d) => { const p = dayParts(d); return `<button class="day" data-day="${d}" aria-pressed="${d === state.day}"><small>${p.dow.slice(0, 3)}</small><b>${p.d}</b><small>${p.mon}</small></button>`; }).join("")}</div>
       <div class="times" role="group" aria-label="Time">${state.days[state.day].map((t) => `<button class="time" data-t="${t.startAt}" aria-pressed="${state.slot?.startAt === t.startAt}">${t.label}</button>`).join("")}</div>
       <div class="panel-foot"><button class="btn ghost" id="back">Back</button><button class="btn" id="next" ${state.slot ? "" : "disabled"}>Continue</button></div>`;
@@ -298,6 +305,7 @@ async function mountCard() {
 /* ---------- Hero: next free slots for the first service ---------- */
 async function loadNextSlots() {
   const box = document.getElementById("nextSlots");
+  if (!box || !state.services.length) return;
   const s = state.services.find((x) => /reiki/i.test(x.name)) || state.services[0];
   document.getElementById("nextTitle").textContent = `${s.name}, ${s.minutes} minutes`;
   if (!s.variationId) { box.innerHTML = `<p class="muted">Call ${PHONE} to book.</p>`; return; }
@@ -319,16 +327,18 @@ renderServices();
 render();
 api("/api/config").then((cfg) => {
   state.config = cfg;
-  if (cfg.services?.length) state.services = cfg.services;
+  if (cfg.services?.length) state.services = forPage(cfg.services);
   renderServices(); render(); loadNextSlots();
 }).catch((e) => {
   state.loadErr = e.message; render();
-  document.getElementById("nextSlots").innerHTML = `<p class="muted">Call ${PHONE} to book.</p>`;
+  if ($("nextSlots")) $("nextSlots").innerHTML = `<p class="muted">Call ${PHONE} to book.</p>`;
 });
 
 /* ---------- Hero card aura ---------- */
 (function () {
-  const c = document.getElementById("aura"), x = c.getContext("2d");
+  const c = document.getElementById("aura");
+  if (!c) return;
+  const x = c.getContext("2d");
   const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const col = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
   const size = () => { c.width = c.offsetWidth * devicePixelRatio; c.height = c.offsetHeight * devicePixelRatio; };

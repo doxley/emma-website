@@ -316,3 +316,10 @@ footer.site .foot-brand img{width:30px;height:auto}
 .ws-contact{display:grid;gap:.6rem;justify-items:start}
 .ws-contact small{display:block;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:600}
 .ws-contact span{user-select:all;font-weight:600}
+
+.ws-booking{display:grid;gap:1rem;scroll-margin-top:90px}
+.ws-booking h2{font-size:clamp(1.8rem,4vw,2.4rem)}
+.ws-booking .book-grid{margin-top:.6rem}
+.ws-prices{display:flex;flex-wrap:wrap;gap:.6rem}
+.ws-prices span{padding:.5rem .9rem;border-radius:999px;background:var(--heather-soft);color:var(--heather)}
+.ws-prices b{color:var(--ink);font-weight:600;margin-right:.3rem}

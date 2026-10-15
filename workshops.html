@@ -17,7 +17,7 @@
 <link rel="stylesheet" href="/styles.css">
 <style>body{margin:0} img{max-width:100%} [hidden]{display:none!important}</style>
 </head>
-<body>
+<body data-booking="training">
 <header class="nav"><div class="wrap">
   <a class="brand" href="/" aria-label="Holistic Solutions with Emma, home">
     <img src="/brand/mark.png" alt="" width="46" height="37">
@@ -39,7 +39,8 @@
   <img class="mark" src="/brand/mark-light.png" alt="" width="96" height="77">
   <p class="eyebrow">Workshops</p>
   <h1>One-to-one tarot training</h1>
-  <p class="lede">Two personal courses with Emma, each lasting about 2½ to 3 hours. All you need to get started is an interest in tarot.</p>
+  <p class="lede">Two personal courses with Emma, each lasting about 2½ to 3 hours. All you need to get started is an interest in tarot. Tuesdays from 3 November.</p>
+  <a class="btn" href="#book" style="margin-top:1.2rem;background:var(--cream);border-color:var(--cream);color:var(--brand-lo)">Book a course</a>
 </div></section>
 
 <section class="ws"><div class="wrap ws-wrap">
@@ -54,7 +55,7 @@
     <article class="course">
       <p class="eyebrow">Level 1 · One to one</p>
       <h2>Understanding the basics of tarot</h2>
-      <div class="course-meta"><span>About 2½–3 hours</span><span>Complete beginners welcome</span><span>Free deck to keep</span></div>
+      <div class="course-meta"><span>£80</span><span>About 2½–3 hours</span><span>Complete beginners welcome</span><span>Free deck to keep</span></div>
       <p>Suitable for complete beginners, or anyone who wants to further their understanding of the cards.</p>
       <ul>
         <li>Each card and its meaning discussed in depth</li>
@@ -67,7 +68,7 @@
     <article class="course">
       <p class="eyebrow">Level 2 · One to one</p>
       <h2>Next level tarot</h2>
-      <div class="course-meta"><span>About 2½–3 hours</span><span>Basic card knowledge needed</span><span>Bring your own deck</span></div>
+      <div class="course-meta"><span>£110</span><span>About 2½–3 hours</span><span>Basic card knowledge needed</span><span>Bring your own deck</span></div>
       <p>Suitable for those who know the basic card meanings and want to learn how to draw deeper meanings from the cards.</p>
       <ul>
         <li>The basic numerology meanings of the minor cards</li>
@@ -79,15 +80,27 @@
     </article>
   </div>
 
-  <div class="ws-book">
-    <div>
-      <h3>Book your course</h3>
-      <p class="muted">Courses are one to one, so Emma will arrange a date and time that suits you. Get in touch to book or to ask any questions.</p>
+  <div class="ws-booking" id="book">
+    <p class="eyebrow">Book online</p>
+    <h2>Book your course</h2>
+    <p class="muted" style="max-width:40em">Courses run on Tuesdays, 1pm–4pm or 5pm–8pm, from 3 November to 22 December. We set aside 3 hours, and most sessions take 2½ to 3. Pay securely online to secure your date.</p>
+    <div class="ws-prices"><span><b>Understanding the basics</b> £80</span><span><b>Next level tarot</b> £110</span></div>
+    <div class="book-grid">
+      <ol class="steps" id="steps">
+        <li data-s="1"><span class="n">1</span><span>Course</span></li>
+        <li data-s="2"><span class="n">2</span><span>Date</span></li>
+        <li data-s="3"><span class="n">3</span><span>Your details</span></li>
+        <li data-s="4"><span class="n">4</span><span>Pay</span></li>
+      </ol>
+      <div class="panel" id="panel" aria-live="polite"></div>
     </div>
-    <div class="ws-contact">
-      <div><small>Phone</small><span>0114 470 4565</span></div>
-      <div><small>Email</small><span>holisticsolutionswithemma@gmail.com</span></div>
-      <a class="btn" href="mailto:holisticsolutionswithemma@gmail.com?subject=Tarot%20training%20enquiry">Email Emma</a>
+    <div class="policy">
+      <h3>Changes and cancellations</h3>
+      <ul>
+        <li><b>More than 24 hours before:</b> cancel for a full refund, or move to another course date, at <a href="/manage">Manage booking</a>.</li>
+        <li><b>Within 24 hours:</b> cancellations aren't refunded. To move your date, call 0114 470 4565.</li>
+        <li>Questions before booking? Call <b>0114 470 4565</b> or email <b>holisticsolutionswithemma@gmail.com</b>.</li>
+      </ul>
     </div>
   </div>
 </div></section>
@@ -96,5 +109,6 @@
   <span class="foot-brand"><img src="/brand/mark.png" alt="" width="30" height="24">© 2026 Holistic Solutions with Emma</span>
   <span><a href="/workshops">Workshops</a> · <a href="/manage">Manage booking</a> · <a href="/#room">Room to rent</a> · <a href="/#policy">Cancellation policy</a> · Payments processed securely by Square</span>
 </div></footer>
+<script src="/app.js" defer></script>
 </body>
 </html>
