@@ -11,7 +11,7 @@ export const weekdayOf = (isoDate) => { const [y, m, d] = isoDate.split("-").map
 export const RULES = {
   // One-to-one tarot training: Tuesdays, 1–4pm or 5–8pm, 3 Nov to 22 Dec 2026.
   training: { days: [2], starts: ["13:00", "17:00"], from: "2026-11-03", to: "2026-12-22" },
-  // Online tarot: Tuesdays, any free hour.
+  // Online tarot and distance Reiki: Tuesdays, any free hour.
   online: { days: [2] },
   // In-person treatments: Wednesday to Friday.
   inPerson: { days: [3, 4, 5] },
@@ -19,7 +19,7 @@ export const RULES = {
 
 export function kindOf(serviceName = "") {
   if (/training|workshop|course/i.test(serviceName)) return "training";
-  if (/online/i.test(serviceName)) return "online";
+  if (/online|distance/i.test(serviceName)) return "online";
   return "inPerson";
 }
 export const ruleFor = (service) => RULES[kindOf(service?.name)];

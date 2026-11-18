@@ -6,6 +6,7 @@ import { getBusiness, searchAvailability, sq, send, readJson, londonDate, london
 import { verifyToken, getBooking, describe, refundBooking, qualifiesForRefund, isCancelled, PHONE } from "./_manage.js";
 
 import { allowedStart } from "./_rules.js";
+import { reissueVoucherForBooking } from "./_vouchers.js";
 const money = (p, cur = "GBP") => new Intl.NumberFormat("en-GB", { style: "currency", currency: cur }).format(p / 100).replace(/\.00$/, "");
 
 async function load(token) {
@@ -43,8 +44,9 @@ export default async function handler(req, res) {
         method: "POST",
         body: { idempotency_key: `cancel-${booking.id}`.slice(0, 45), booking_version: booking.version },
       });
-      let refunded = 0, currency = "GBP", refundError = false;
+      let refunded = 0, currency = "GBP", refundError = false, reissue = null;
       if (refund) {
+        try { reissue = await reissueVoucherForBooking(booking); } catch (err) { console.error("Voucher reissue failed", err); }
         try {
           const out = await refundBooking(booking, "Cancelled online more than 24 hours before the appointment");
           refunded = out.refunded; currency = out.currency || currency;
@@ -57,7 +59,11 @@ export default async function handler(req, res) {
         cancelled: true,
         refunded,
         refundText: refunded ? money(refunded, currency) : null,
-        message: refunded
+        message: reissue?.reissued
+          ? `Your appointment is cancelled. As you paid with a gift voucher, we've emailed a new voucher code to ${reissue.email}. It has the same expiry date as before.`
+          : reissue?.already
+            ? "Your appointment is cancelled. Your gift voucher has already been reissued by email."
+          : refunded
           ? `Your appointment is cancelled and ${money(refunded, currency)} is on its way back to your card. Refunds usually arrive within 5 to 10 working days.`
           : refundError
             ? `Your appointment is cancelled. Your refund couldn't be processed automatically, so Emma will refund you by hand. Call ${PHONE} if you have any questions.`

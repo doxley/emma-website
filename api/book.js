@@ -1,5 +1,8 @@
 // POST /api/book
-// Body: { sourceId, idempotencyKey, variationId, startAt, givenName, familyName, email, phone, note }
+// Body: { sourceId, idempotencyKey, variationId, startAt, givenName, familyName, email, phone, note, code }
+//
+// `code` is an optional gift voucher (HSE-XXXX-XXXX) or discount code. A voucher covers the whole
+// treatment, so no card is needed: the voucher is reserved before booking and released if booking fails.
 //
 // Order of operations keeps the client from being charged without an appointment:
 //   1. check the slot is still free
@@ -12,6 +15,7 @@ import {
 } from "./_square.js";
 import { signBooking } from "./_manage.js";
 import { allowedStart, priceFor } from "./_rules.js";
+import { priceWithCode, markVoucher } from "./_vouchers.js";
 
 const clean = (s, max = 200) => String(s ?? "").trim().slice(0, max);
 
@@ -30,16 +34,20 @@ export default async function handler(req, res) {
   const note = clean(body.note, 1000);
   const startAt = clean(body.startAt, 40);
 
-  if (!sourceId || !/^[\w-]{8,36}$/.test(key)) return send(res, 400, { error: "Payment details are missing. Please try again." });
+  if (!/^[\w-]{8,36}$/.test(key)) return send(res, 400, { error: "Something went wrong. Please refresh the page and try again." });
   if (!givenName || !/^\S+@\S+\.\S+$/.test(email)) return send(res, 400, { error: "Please add your name and a valid email address." });
   if (Number.isNaN(Date.parse(startAt))) return send(res, 400, { error: "Please choose a time." });
 
-  let paymentId = null;
+  let paymentId = null, voucher = null;
   try {
     const { locationId, services } = await getBusiness();
     const service = services.find((s) => s.variationId === body.variationId);
-    const price = service ? priceFor(service) : null;
     if (!service) return send(res, 400, { error: "That treatment isn't available to book online." });
+    const base = priceFor(service);
+    const coded = await priceWithCode({ service, base: base.amount, code: body.code, locationId });
+    if (coded.error) return send(res, 400, { error: coded.error, code: "BAD_CODE" });
+    const price = { amount: coded.amount, currency: base.currency || service.currency };
+    if (price.amount > 0 && !sourceId) return send(res, 400, { error: "Payment details are missing. Please try again." });
 
     // 1. Slot still free?
     const start = new Date(startAt);
@@ -77,9 +85,18 @@ export default async function handler(req, res) {
       customerId = created.customer.id;
     }
 
-    // 3. Authorise payment (price always comes from Square's catalog, never the browser)
+    // 3. Authorise payment (price always comes from Square's catalog, never the browser),
+    //    or reserve the gift voucher so nobody else can use it at the same moment.
     const when = `${londonLong(start)}, ${londonTime(start)}`;
-    const payment = await sq("/v2/payments", {
+    if (coded.kind === "voucher") {
+      try {
+        voucher = await markVoucher(coded.voucher, `pending:${Date.now()}`, { key: `${key}-vres` });
+      } catch {
+        return send(res, 409, { error: "That voucher has just been used. Please check your code.", code: "BAD_CODE" });
+      }
+    }
+    const codeNote = coded.kind === "voucher" ? `Paid with gift voucher ${coded.code}` : coded.kind === "discount" ? `Discount code ${coded.code} (−£${(coded.saving / 100).toFixed(2)})` : "";
+    const payment = price.amount <= 0 ? null : await sq("/v2/payments", {
       method: "POST",
       body: {
         idempotency_key: `${key}-pay`,
@@ -89,10 +106,10 @@ export default async function handler(req, res) {
         location_id: locationId,
         customer_id: customerId,
         buyer_email_address: email,
-        note: `${service.name} – ${when}`.slice(0, 500),
+        note: `${service.name} – ${when}${codeNote ? ` – ${codeNote}` : ""}`.slice(0, 500),
       },
     });
-    paymentId = payment.payment.id;
+    paymentId = payment?.payment.id || null;
 
     // 4. Booking
     let booking;
@@ -105,7 +122,7 @@ export default async function handler(req, res) {
             start_at: slot.start_at,
             location_id: locationId,
             customer_id: customerId,
-            customer_note: note || undefined,
+            customer_note: [note, codeNote].filter(Boolean).join("\n\n").slice(0, 4096) || undefined,
             appointment_segments: [
               {
                 duration_minutes: segment.duration_minutes || service.minutes,
@@ -119,17 +136,22 @@ export default async function handler(req, res) {
       });
       booking = made.booking;
     } catch (err) {
-      await sq(`/v2/payments/${paymentId}/cancel`, { method: "POST" }).catch((e) => console.error("Cancel failed", e));
+      if (paymentId) await sq(`/v2/payments/${paymentId}/cancel`, { method: "POST" }).catch((e) => console.error("Cancel failed", e));
       paymentId = null;
+      if (voucher) { await markVoucher(voucher, "released", { key: `${key}-vrel` }).catch((e) => console.error("Voucher release failed", e)); voucher = null; }
       if (err.status === 409 || err.code === "BAD_REQUEST" || err.code === "CONFLICT") {
         return send(res, 409, { error: "Sorry, that time has just been taken. You haven't been charged. Please choose another time.", code: "SLOT_TAKEN" });
       }
       throw err;
     }
 
-    // 5. Take the money
+    // 5. Take the money (or mark the voucher as used)
     let receiptUrl = null;
-    try {
+    if (voucher) {
+      await markVoucher(voucher, booking.id, { complete: true, key: `${key}-vuse` }).catch((e) => console.error("Voucher mark-used failed (booking stands)", e));
+      voucher = null;
+    }
+    if (paymentId) try {
       const done = await sq(`/v2/payments/${paymentId}/complete`, { method: "POST", body: {} });
       receiptUrl = done.payment?.receipt_url || null;
     } catch (err) {
@@ -146,12 +168,15 @@ export default async function handler(req, res) {
       when,
       amount: price.amount,
       currency: service.currency,
+      codeKind: coded.kind,
+      codeLabel: coded.label || null,
       email,
       receiptUrl,
     });
   } catch (err) {
     console.error(err);
     if (paymentId) await sq(`/v2/payments/${paymentId}/cancel`, { method: "POST" }).catch(() => {});
+    if (voucher) await markVoucher(voucher, "released", { key: `${body.idempotencyKey}-vrel2` }).catch(() => {});
     if (err instanceof SquareError) {
       const cardCodes = ["CARD_DECLINED", "CVV_FAILURE", "ADDRESS_VERIFICATION_FAILURE", "INVALID_EXPIRATION", "GENERIC_DECLINE", "INSUFFICIENT_FUNDS", "CARD_DECLINED_VERIFICATION_REQUIRED", "INVALID_CARD"];
       if (cardCodes.includes(err.code)) {

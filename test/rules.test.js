@@ -52,3 +52,9 @@ assert.equal(priceFor(reikiP, new Date("2026-10-31T00:00:00Z")).amount, 4000, "b
 assert.equal(priceFor(onlineP, new Date("2026-10-15T12:00:00Z")).amount, 3000, "online tarot unchanged");
 assert.equal(priceFor(courseP, new Date("2026-10-15T12:00:00Z")).amount, 11000, "courses unchanged");
 console.log("✓ launch offer: in-person £25 until end of 30 Oct, online tarot and courses unchanged");
+
+// Distance Reiki is booked like online tarot: Tuesdays
+assert.equal(kindOf("Distance Reiki"), "online");
+assert.ok(allowedStart({ name: "Distance Reiki" }, "2026-11-24T15:00:00Z", now));
+assert.ok(!allowedStart({ name: "Distance Reiki" }, "2026-11-25T15:00:00Z", now));
+console.log("✓ distance Reiki: Tuesdays, like online tarot");

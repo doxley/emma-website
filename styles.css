@@ -363,3 +363,30 @@ footer.site .wrap{flex-wrap:wrap}
 .promo a{color:var(--heather);font-weight:600;margin-left:.3rem}
 s.was{font-size:.6em;color:var(--muted);font-weight:400;margin-left:.25em}
 .facts s{opacity:.7;font-weight:400;margin-left:.2em}
+
+/* Gift vouchers and codes */
+.vbuy{display:grid;gap:1rem}
+.vh{font-size:1.25rem;margin:1rem 0 0}
+.vbuy .choices{display:grid;gap:.6rem}
+.seg{display:flex;gap:.6rem;flex-wrap:wrap}
+.seg label{display:flex;gap:.45rem;align-items:center;padding:.6rem 1rem;border:1.5px solid var(--line);border-radius:999px;cursor:pointer;background:var(--bg)}
+.seg label:has(input:checked){border-color:var(--heather);background:var(--heather-soft)}
+.fields{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+.fields .wide{grid-column:1/-1}
+@media (max-width:640px){.fields{grid-template-columns:1fr}}
+.field{display:grid;gap:.3rem}
+.field label{font-weight:600;font-size:.92rem}
+.field input,.field textarea,.coderow input{font:inherit;padding:.7rem .85rem;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);color:var(--ink);width:100%;box-sizing:border-box}
+.agree{display:flex;gap:.6rem;align-items:flex-start;font-size:.92rem}
+.agree a{color:var(--heather)}
+.vcode{font-family:"Courier New",monospace;font-size:clamp(1.5rem,5vw,2rem);font-weight:700;letter-spacing:.12em;margin:.4rem 0;padding:.6rem 1.2rem;border:2px dashed var(--heather);border-radius:12px;color:var(--ink)}
+.codebox{margin-top:1rem;border:1px solid var(--line);border-radius:12px;padding:.8rem 1rem;background:var(--bg)}
+.codebox summary{cursor:pointer;font-weight:600;color:var(--heather)}
+.coderow{display:flex;gap:.6rem;margin-top:.8rem}
+.coderow input{text-transform:uppercase;letter-spacing:.05em}
+.coderow .btn{flex:none}
+.linkbtn{background:none;border:0;padding:0;margin-left:.5rem;font:inherit;font-size:.85rem;color:var(--heather);text-decoration:underline;cursor:pointer}
+.seg input,.agree input{width:auto;margin:0;flex:none;accent-color:var(--heather)}
+.agree{display:flex!important;font-weight:400}
+.field label{display:block}
+.seg label{font-weight:500}

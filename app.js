@@ -3,6 +3,11 @@
 
 // Descriptions shown on the site. Price and duration always come from Square.
 const COPY = {
+  distance: {
+    blurb: "Reiki sent from a distance: relax at home at your booked time while Emma works with you remotely.",
+    points: ["Tuesdays, 12pm to 8pm", "Find a quiet, comfortable spot at home", "Emma will be in touch beforehand to explain how it works"],
+    glyph: '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3c3 4 3 8 0 11-3-3-3-7 0-11Z"/><path d="M4 19c2.5-2 5-2 8 0s5.5 2 8 0"/><path d="M6 15.5c2-1.3 3.8-1.3 6 0"/></svg>',
+  },
   online: {
     blurb: "A full tarot reading from the comfort of home, by video call on Facebook Messenger.",
     points: ["Tuesdays, 12pm to 8pm", "Same depth as an in-person reading", "You'll need Messenger on your phone or computer"],
@@ -41,7 +46,7 @@ const PHONE = "0114 470 4565";
 const money = (amount, cur = "GBP") => new Intl.NumberFormat("en-GB", { style: "currency", currency: cur, minimumFractionDigits: amount % 100 ? 2 : 0 }).format(amount / 100);
 const priceHtml = (s) => money(s.amount, s.currency) + (s.wasAmount ? ` <s class="was">${money(s.wasAmount, s.currency)}</s>` : "");
 const copyFor = (name) => COPY[Object.keys(COPY).find((k) => name.toLowerCase().includes(k.slice(0, 6)))] || { blurb: "", points: [], glyph: COPY.reiki.glyph };
-const isOnline = (s) => /online/i.test(s.name);
+const isOnline = (s) => /online|distance/i.test(s.name);
 const isTraining = (s) => /training|workshop|course/i.test(s.name);
 // This script runs on the home page (treatments) and on /workshops (tarot training).
 // It also runs on each treatment page (/reiki-sheffield etc.), showing just that treatment.
@@ -125,7 +130,7 @@ function setSteps() {
 function go(step) { state.step = step; render(); }
 
 async function pickService(s) {
-  if (state.svc !== s) { state.svc = s; state.days = null; state.day = null; state.slot = null; }
+  if (state.svc !== s) { state.svc = s; state.days = null; state.day = null; state.slot = null; state.coded = null; }
   go(2);
   if (!state.days) {
     try {
@@ -150,7 +155,7 @@ function render() {
       return;
     }
     panel.innerHTML = `<h3>${MODE === "training" ? "Choose your course" : "Choose a treatment"}</h3><div class="choices">${state.services.map((x, i) => `
-      <button class="choice" aria-pressed="${s === x}" data-i="${i}"><span><b>${esc(x.name)}</b><br><span class="muted">${isTraining(x) ? "One to one · 3-hour slot · Tuesdays" : `${x.minutes} minutes · ${isOnline(x) ? "online, Tuesdays" : "at Middlewood Road"}`}</span></span><span class="price" style="font-size:1.3rem">${priceHtml(x)}</span></button>`).join("")}</div>
+      <button class="choice" aria-pressed="${s === x}" data-i="${i}"><span><b>${esc(x.name)}</b><br><span class="muted">${isTraining(x) ? "One to one · 3-hour slot · Tuesdays" : `${x.minutes} minutes · ${/distance/i.test(x.name) ? "from home, Tuesdays" : isOnline(x) ? "online, Tuesdays" : "at Middlewood Road"}`}</span></span><span class="price" style="font-size:1.3rem">${priceHtml(x)}</span></button>`).join("")}</div>
       <div class="panel-foot"><span class="muted">${MODE === "training" ? `Questions first? Call ${PHONE}.` : `Booking for today? Call ${PHONE}.`}</span></div>`;
     panel.querySelectorAll("[data-i]").forEach((b) => b.onclick = () => pickService(state.services[+b.dataset.i]));
   }
@@ -208,22 +213,49 @@ function render() {
 
   if (state.step === 4) {
     const p = dayParts(state.day);
+    const c = state.coded;
+    const due = c ? c.amount : s.amount;
+    const free = due <= 0;
     panel.innerHTML = `<h3>Check and pay</h3>
       <dl class="summary" style="margin:0">
         <div><dt>Treatment</dt><dd>${esc(s.name)} · ${s.minutes} min</dd></div>
         <div><dt>When</dt><dd>${p.dow} ${p.d} ${p.mon}, ${state.slot.label}</dd></div>
-        <div><dt>Where</dt><dd>${isOnline(s) ? "Video call on Facebook Messenger. Emma will message you before your reading" : "341 Middlewood Road, S6 1TH"}</dd></div>
+        <div><dt>Where</dt><dd>${/distance/i.test(s.name) ? "From home. Emma will be in touch before your session" : isOnline(s) ? "Video call on Facebook Messenger. Emma will message you before your reading" : "341 Middlewood Road, S6 1TH"}</dd></div>
         <div><dt>Name</dt><dd>${esc(state.givenName)} ${esc(state.familyName)}</dd></div>
-        <div class="total"><dt>To pay</dt><dd>${money(s.amount, s.currency)}</dd></div>
+        ${c ? `<div><dt>${c.kind === "voucher" ? "Gift voucher" : "Discount"}</dt><dd>${esc(c.label)} <button class="linkbtn" id="removeCode" type="button">Remove</button></dd></div>` : ""}
+        <div class="total"><dt>To pay</dt><dd>${c ? `${money(due, s.currency)} <s class="was">${money(s.amount, s.currency)}</s>` : money(due, s.currency)}</dd></div>
       </dl>
+      ${c ? "" : `<details class="codebox"${state.codeOpen ? " open" : ""}><summary>Have a gift voucher or discount code?</summary>
+        <div class="coderow"><input id="code" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="e.g. HSE-ABCD-EFGH" aria-label="Gift voucher or discount code" value="${esc(state.codeTyped || "")}"><button class="btn ghost" id="applyCode" type="button">Apply</button></div>
+        <p class="err" id="codeErr" role="alert"></p></details>`}
+      ${free ? `<p class="muted" style="margin:.4rem 0 0">Nothing to pay: your ${c?.kind === "voucher" ? "gift voucher covers this treatment" : "code covers the full price"}.</p>` : `
       ${state.config.env === "sandbox" ? `<p class="testnote">Test mode: use card 4111 1111 1111 1111, any future expiry, CVV 111, postcode SW1A 1AA. No real money is taken.</p>` : ""}
       <div id="card-container" class="card-box"><p class="muted">Loading secure card form…</p></div>
-      <p class="err" id="err" role="alert"></p>
       <div class="square"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="18" height="18" rx="4"/><rect x="8" y="8" width="8" height="8" rx="1.5"/></svg>
-        <span>Card details go straight to Square and are never stored on this website. Your card is only charged once the appointment is confirmed.</span></div>
-      <div class="panel-foot"><button class="btn ghost" id="back">Back</button><button class="btn" id="pay" disabled>Pay ${money(s.amount, s.currency)}</button></div>`;
+        <span>Card details go straight to Square and are never stored on this website. Your card is only charged once the appointment is confirmed.</span></div>`}
+      <p class="err" id="err" role="alert"></p>
+      <div class="panel-foot"><button class="btn ghost" id="back">Back</button><button class="btn" id="pay" ${free ? "" : "disabled"}>${free ? "Confirm booking" : `Pay ${money(due, s.currency)}`}</button></div>`;
     panel.querySelector("#back").onclick = () => { destroyCard(); go(3); };
-    mountCard();
+    const box = panel.querySelector(".codebox");
+    if (box) box.ontoggle = () => { state.codeOpen = box.open; };
+    const apply = panel.querySelector("#applyCode");
+    if (apply) {
+      const input = panel.querySelector("#code");
+      input.onkeydown = (e) => { if (e.key === "Enter") { e.preventDefault(); apply.click(); } };
+      apply.onclick = async () => {
+        const out = panel.querySelector("#codeErr");
+        state.codeTyped = input.value.trim();
+        if (!state.codeTyped) { out.textContent = "Please enter a code."; return; }
+        apply.disabled = true; apply.textContent = "Checking…"; out.textContent = "";
+        try {
+          state.coded = await api("/api/check-code", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code: state.codeTyped, variationId: s.variationId }) });
+          await destroyCard(); render();
+        } catch (e) { out.textContent = e.message; apply.disabled = false; apply.textContent = "Apply"; }
+      };
+    }
+    const rm = panel.querySelector("#removeCode");
+    if (rm) rm.onclick = async () => { state.coded = null; await destroyCard(); render(); };
+    if (free) wireFreeBooking(); else mountCard();
   }
 
   if (state.step === 5) {
@@ -231,13 +263,53 @@ function render() {
     const r = state.result;
     panel.innerHTML = `<div class="done-box"><div class="tick"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
       <h3 style="margin:0">You're booked in, ${esc(state.givenName)}</h3>
-      <p class="muted" style="max-width:32em">${esc(r.service)} on ${esc(r.when)}. You've paid ${money(r.amount, r.currency)}. Square will send a reminder to ${esc(r.email)} before your appointment.</p>
+      <p class="muted" style="max-width:32em">${esc(r.service)} on ${esc(r.when)}. ${r.codeKind === "voucher" ? "Paid with your gift voucher." : `You've paid ${money(r.amount, r.currency)}.`} Square will send a reminder to ${esc(r.email)} before your appointment.</p>
       <div style="display:flex;gap:.6rem;flex-wrap:wrap;justify-content:center">
         ${r.manageToken ? `<a class="btn" href="/manage?t=${encodeURIComponent(r.manageToken)}">Manage this booking</a>` : ""}
         ${r.receiptUrl ? `<a class="btn ghost" href="${esc(r.receiptUrl)}" target="_blank" rel="noopener">View receipt</a>` : ""}
       </div>
       <p class="muted" style="font-size:.9rem;max-width:32em">Bookmark “Manage this booking” to cancel or move your appointment later. You can also find it any time under <a href="/manage">Manage booking</a> with your email and mobile number.</p></div>`;
   }
+}
+
+/* ---------- Sending the booking ---------- */
+function bookingBody(sourceId) {
+  const s = state.svc;
+  state.bookKey ||= crypto.randomUUID();
+  return JSON.stringify({
+    sourceId, idempotencyKey: state.bookKey,
+    variationId: s.variationId, startAt: state.slot.startAt,
+    givenName: state.givenName, familyName: state.familyName,
+    email: state.email, phone: state.phone, note: state.note,
+    code: state.coded?.code || "",
+  });
+}
+async function sendBooking(sourceId) {
+  try {
+    const result = await api("/api/book", { method: "POST", headers: { "Content-Type": "application/json" }, body: bookingBody(sourceId) });
+    state.result = result; state.bookKey = null;
+    await destroyCard();
+    go(5);
+    loadNextSlots();
+  } catch (e) {
+    state.bookKey = null;
+    if (e.data?.code === "BAD_CODE") { state.coded = null; state.codeOpen = true; render(); panel.querySelector("#err").textContent = e.message; return false; }
+    panel.querySelector("#err").textContent = e.message;
+    if (e.data?.code === "SLOT_TAKEN") {
+      state.days = null; state.slot = null;
+      setTimeout(() => { destroyCard(); pickService(state.svc); }, 2500);
+    }
+    return false;
+  }
+  return true;
+}
+function wireFreeBooking() {
+  const pay = panel.querySelector("#pay");
+  pay.onclick = async () => {
+    pay.disabled = true; const label = pay.textContent; pay.textContent = "Booking…";
+    panel.querySelector("#err").textContent = "";
+    if (!(await sendBooking(""))) { const b = panel.querySelector("#pay"); if (b) { b.disabled = false; b.textContent = label; } }
+  };
 }
 
 /* ---------- Square card form ---------- */
@@ -277,8 +349,9 @@ async function mountCard() {
     pay.textContent = "Processing…";
     try {
       const s = state.svc;
+      const due = state.coded ? state.coded.amount : s.amount;
       const tok = await card.tokenize({
-        amount: (s.amount / 100).toFixed(2),
+        amount: (due / 100).toFixed(2),
         currencyCode: s.currency,
         intent: "CHARGE",
         customerInitiated: true,
@@ -286,31 +359,12 @@ async function mountCard() {
         billingContact: { givenName: state.givenName, familyName: state.familyName, email: state.email, phone: state.phone, countryCode: "GB" },
       });
       if (tok.status !== "OK") throw new Error(tok.errors?.[0]?.message || "Please check your card details.");
-      const result = await api("/api/book", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          sourceId: tok.token,
-          idempotencyKey: crypto.randomUUID(),
-          variationId: s.variationId,
-          startAt: state.slot.startAt,
-          givenName: state.givenName, familyName: state.familyName,
-          email: state.email, phone: state.phone, note: state.note,
-        }),
-      });
-      state.result = result;
-      await destroyCard();
-      go(5);
-      loadNextSlots();
+      if (await sendBooking(tok.token)) return;
     } catch (e) {
       err.textContent = e.message;
-      if (e.data?.code === "SLOT_TAKEN") {
-        state.days = null; state.slot = null;
-        setTimeout(() => { destroyCard(); pickService(state.svc); }, 2500);
-      }
-      pay.disabled = false;
-      pay.textContent = label;
     }
+    const b = panel.querySelector("#pay");
+    if (b && b === pay) { pay.disabled = false; pay.textContent = label; }
   };
 }
 

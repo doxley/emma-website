@@ -4,9 +4,18 @@
 //   - client cancels more than 24h before -> full refund
 //   - Emma cancels                        -> full refund
 //   - client cancels within 24h / no-show -> nothing
+// Bookings paid with a gift voucher get a new voucher code by email instead of a refund.
 // Uses a Web-standard handler so we can read the raw body to check Square's signature.
 import crypto from "node:crypto";
 import { refundBooking, NOTICE_MS } from "./_manage.js";
+import { reissueVoucherForBooking } from "./_vouchers.js";
+
+// A booking paid with a gift voucher has no card payment: give a fresh voucher instead of a refund.
+async function giveBack(booking, reason) {
+  const v = await reissueVoucherForBooking(booking).catch((e) => { console.error("Voucher reissue failed", e); return null; });
+  if (v) return { voucher: v.reissued ? "reissued" : "already", refunded: 0 };
+  return refundBooking(booking, reason);
+}
 
 const json = (status, data) => new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json" } });
 
@@ -23,14 +32,14 @@ export async function handleEvent(event) {
   if (!booking) return { ignored: "no booking" };
 
   if (booking.status === "CANCELLED_BY_SELLER") {
-    const r = await refundBooking(booking, "Appointment cancelled by Holistic Solutions with Emma");
-    return { action: "seller-cancel", refunded: r.refunded };
+    const r = await giveBack(booking, "Appointment cancelled by Holistic Solutions with Emma");
+    return { action: "seller-cancel", refunded: r.refunded, voucher: r.voucher };
   }
   if (booking.status === "CANCELLED_BY_CUSTOMER") {
     const cancelledAt = Date.parse(booking.updated_at || event.created_at || new Date().toISOString());
     if (Date.parse(booking.start_at) - cancelledAt > NOTICE_MS) {
-      const r = await refundBooking(booking, "Cancelled more than 24 hours before the appointment");
-      return { action: "customer-cancel", refunded: r.refunded };
+      const r = await giveBack(booking, "Cancelled more than 24 hours before the appointment");
+      return { action: "customer-cancel", refunded: r.refunded, voucher: r.voucher };
     }
     return { action: "customer-cancel-late", refunded: 0 };
   }
